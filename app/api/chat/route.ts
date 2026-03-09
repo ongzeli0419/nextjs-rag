@@ -17,6 +17,11 @@ async function generateEmbedding(message: string) {
     value: message,
   });
 }
+type Chunk = {
+  url: string;
+  date_updated: string;
+  content: string;
+};
 
 async function fetchRelevantContext(embedding: number[]) {
   const { data, error } = await supabase.rpc("get_relevant_chunks", {
@@ -28,8 +33,8 @@ async function fetchRelevantContext(embedding: number[]) {
   if (error) throw error;
 
   return JSON.stringify(
-    data.map(
-      (item: any) => `
+    (data as Chunk[]).map(
+      (item) => `
         Source: ${item.url}
         Date Updated: ${item.date_updated}
         Content: ${item.content}
@@ -37,6 +42,7 @@ async function fetchRelevantContext(embedding: number[]) {
     )
   );
 }
+
 
 // Create system message template
 function createPrompt(context: string, userQuestion: string) {
